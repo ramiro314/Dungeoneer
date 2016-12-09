@@ -1,5 +1,7 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿/*
+Script para animar el proyectil del StealSpell
+*/
+using UnityEngine;
 using UnityEngine.Networking;
 using UnityStandardAssets.Characters.ThirdPerson;
 

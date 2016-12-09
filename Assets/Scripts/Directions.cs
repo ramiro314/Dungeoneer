@@ -1,4 +1,8 @@
-﻿using System.Collections.Generic;
+﻿/*
+Algoritmo de Dungeon
+En esta clase se definen constantes que representan las direcciones cardinales en un plano 2D.
+*/
+using System.Collections.Generic;
 using UnityEngine;
 
 public static class Directions

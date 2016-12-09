@@ -1,8 +1,16 @@
-﻿using UnityEngine;
+﻿/*
+Game manager del juego.
+Se encarga de:
+- Generar el dungeon.
+- Iniciar el countdown de inicio.
+- Spawnear los players en el dungeon.
+- Avisar a los clientes cuando el juego llego a su fin.
+- Iniciar el countdown de fin.
+*/
+using UnityEngine;
 using UnityEngine.Networking;
 using Prototype.NetworkLobby;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityStandardAssets.Characters.ThirdPerson;
 using UnityStandardAssets.Utility;
@@ -25,22 +33,20 @@ public class NetworkGameManager : NetworkBehaviour
 
     void Start()
     {
+        // Generate dungeon only in the server, all the objects of the dungeon will spawn in the clients.
         if (isServer)
         {
             GameObject go = new GameObject("Dungeon");
             go.AddComponent<RenderDungeon>();
         }
+
         playerNumber = GameObject.FindGameObjectsWithTag("Player").Length;
         gameEnded = false;
+
+        // Place the camera on top of the dungeon.
         int size = LobbyManager.s_Singleton._playerNumber * 10 + 1;
         Camera.main.transform.position = new Vector3(size / 2f, size, size / 2f);
         StartCoroutine(GameStartCoroutine());
-    }
-
-    [ServerCallback]
-    void Update()
-    {
-
     }
 
     [ClientRpc]
@@ -52,6 +58,7 @@ public class NetworkGameManager : NetworkBehaviour
 
     IEnumerator GameStartCoroutine()
     {
+        // Display countdown.
         gameStartText.enabled = true;
         for (int i = 0; i < startSeconds; i++)
         {
@@ -60,12 +67,16 @@ public class NetworkGameManager : NetworkBehaviour
         }
         gameStartText.enabled = false;
         var players = GameObject.FindGameObjectsWithTag("Player");
+
+        // The server will tell each client where to spawn the player.
         if(isServer){
             foreach (GameObject player in players)
             {
                 player.GetComponent<MyThirdPersonUserControl>().RpcSpawn(NetworkManager.singleton.GetStartPosition().position);
             }
         }
+
+        // Enable UI
         GameObject scores = GameObject.Find("Scores");
         Object scorePrefab = Resources.Load("Prefabs/PlayerScore");
         foreach (GameObject player in players)
@@ -74,11 +85,14 @@ public class NetworkGameManager : NetworkBehaviour
             score.GetComponent<PlayerScore>().player = player.GetComponent<MyThirdPersonUserControl>();
         }
         GameObject.Find("ItemBorder").GetComponent<RawImage>().enabled = true;
+
+        // Enable camera script
         Camera.main.GetComponent<MySmoothFollow>().enabled = true;
     }
 
     IEnumerator GameEndCoroutine()
     {
+        // Tell each player if they won or lost.
         var players = GameObject.FindGameObjectsWithTag("Player");
         foreach (GameObject playerObject in players)
         {
@@ -92,6 +106,8 @@ public class NetworkGameManager : NetworkBehaviour
                 player.RpcLoseMatch();
             }
         }
+
+        // Display countdown.
         gameEndText.enabled = true;
         for (int i = 0; i < endSeconds; i++)
         {

@@ -1,4 +1,8 @@
-﻿using UnityEngine;
+﻿/*
+Algoritmo de Dungeon
+Objeto Stage que guarda la informacion del dungeon generado.
+*/
+using UnityEngine;
 
 public class Stage
 {

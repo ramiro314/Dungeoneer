@@ -1,4 +1,9 @@
-﻿using UnityEngine;
+﻿/*
+Algoritmo de Dungeon
+Clase base que define los metodos basicos para la generacion procedural de niveles.
+*/
+
+using UnityEngine;
 
 public abstract class StageBuilder
 {
@@ -19,6 +24,9 @@ public abstract class StageBuilder
         stage.tiles[(int) pos.x, (int) pos.y].type = type;
     }
 
+    /*
+    Fill the stage with a given TileType. Used for stage initialization.
+    */
     public void fill(TileType tile)
     {
         for (var y = 0; y < stage.height; y++)

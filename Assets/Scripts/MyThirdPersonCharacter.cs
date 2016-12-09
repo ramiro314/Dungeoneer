@@ -1,3 +1,6 @@
+/*
+Copia de ThirdPersonCharacter de los StandardAssets de Unity.
+*/
 using UnityEngine;
 
 namespace UnityStandardAssets.Characters.ThirdPerson

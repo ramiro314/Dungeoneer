@@ -1,6 +1,8 @@
-﻿using UnityEngine;
+﻿/*
+Clase Hook usado por LobbyManager cuando comienza una partida.
+*/
+using UnityEngine;
 using Prototype.NetworkLobby;
-using System.Collections;
 using UnityEngine.Networking;
 using UnityStandardAssets.Characters.ThirdPerson;
 

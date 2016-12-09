@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿/*
+Copia del script SmoothFollow de los StandardAssest de Unity.
+*/
+using UnityEngine;
 
 namespace UnityStandardAssets.Utility
 {

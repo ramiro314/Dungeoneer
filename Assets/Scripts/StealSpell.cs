@@ -1,7 +1,8 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿/*
+Efecto de StealSpell
+*/
+using UnityEngine;
 using UnityEngine.Networking;
-using UnityEngine.UI;
 
 public class StealSpell : ItemEffect
 {
@@ -9,6 +10,7 @@ public class StealSpell : ItemEffect
 
     public override void UseItem()
     {
+        // Spawn projectile
         GameObject projectile = (GameObject)Instantiate(projectilePrefab, caster.transform.position,
             Quaternion.LookRotation(Vector3.forward));
         projectile.GetComponent<StealProjectile>().caster = caster;

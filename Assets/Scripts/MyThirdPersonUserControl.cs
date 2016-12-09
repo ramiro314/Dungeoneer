@@ -1,4 +1,8 @@
-using System;
+/*
+Copia modificada de ThirdPersonUserControl de los StandardAssets de Unity.
+Extiende de NetworkBehaviour para soportar operaciones de red.
+Tambien parte de las mecanicas de juego fueron incluidas.
+*/
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
 using UnityEngine.Networking;
@@ -30,10 +34,11 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         private void Start()
         {
+            // Set the color chosen by the player.
             transform.FindChild("EthanBody").GetComponent<SkinnedMeshRenderer>().material.color = color;
             coins = 0;
 
-            // This is a hack.
+            // The player is not supposed to appear until the countdown ends, lets remove it out of sight.
             transform.position = new Vector3(1000, 1000, 1000);
 
             // get the third person character ( this should never be null due to require component )
@@ -54,6 +59,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     "Warning: no main camera found. Third person character needs a Camera tagged \"MainCamera\", for camera-relative controls.", gameObject);
                 // we use self-relative controls in this case, which probably isn't what the user wants, but hey, we warned them!
             }
+            // Get the image object for the items.
             _itemImage = GameObject.Find("ItemImage").GetComponent<RawImage>();
         }
 
@@ -79,6 +85,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
                 if (!NetworkGameManager.sInstance.gameEnded)
                 {
+                    // Trigger item usage.
                     if (Input.GetKey(KeyCode.I) && item != null)
                     {
                         item.effect.caster = this;
@@ -111,7 +118,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 }
                 else
                 {
-                    // If game ended release crouch animation.
+                    // If game ended stop all animations
+                    m_Move = new Vector3(0, 0, 0);
                     m_Crouch = false;
                 }
                 // pass all parameters to the character control script
@@ -125,6 +133,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             Debug.Log(string.Format("Colided with item {0}", other.name));
             if (other.gameObject.CompareTag("Coin"))
             {
+                // Increase coin count and play sound
                 coins++;
                 AudioSource.PlayClipAtPoint(
                     other.gameObject.GetComponent<AudioSource>().clip,
@@ -133,11 +142,14 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 // The colider is nested two levels into the Coin prefab,
                 // lets remove the source of the prefab to keep the scene clean.
                 Destroy(other.gameObject.transform.parent.gameObject.transform.parent.gameObject);
+
+                // Win condition
                 if (coins >= NetworkGameManager.sInstance.coinsToWin)
                 {
                     NetworkGameManager.sInstance.RpcEndGame();
                 }
             }
+
             if (other.gameObject.CompareTag("Item"))
             {
                 item = other.gameObject.GetComponent<Item>();
@@ -149,6 +161,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 // We need to keep the instance alive to not lose the reference, so lets just move the object out of sight.
                 other.gameObject.transform.parent.gameObject.transform.parent.transform.position = new Vector3(-1000, -1000, -1000);
             }
+
             if (other.gameObject.CompareTag("Projectile") && other.GetComponent<StealProjectile>().caster != this)
             {
                 coins -= 1;

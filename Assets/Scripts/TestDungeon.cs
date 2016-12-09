@@ -1,7 +1,7 @@
-﻿using System;
+﻿/*
+Clase para testear el generador de Dungeon
+*/
 using UnityEngine;
-using System.Collections;
-using System.Net;
 using System.Text;
 
 public class TestDungeon : MonoBehaviour {

@@ -1,14 +1,17 @@
-﻿using System;
+﻿/*
+Algoritmo de Dungeon
+Extendiendo de StageBuilder, define el algoritmo para generar Dungeons en un plano 2D.
+Esta es una implementacion en C# del algoritmo descrito en este blog post:
+http://journal.stuffwithstuff.com/2014/12/21/rooms-and-mazes/
+*/
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
 public class Dungeon : StageBuilder
 {
-    public List<Vector3> debug_connectors;
-
     public List<Rect> rooms;
 
     private int[,] _regions;
@@ -18,15 +21,13 @@ public class Dungeon : StageBuilder
     private int windingPercent;
 
 
-    /// The index of the current region being carved.
+    // The index of the current region being carved.
     private int _currentRegion;
 
     private int _extraConnectorChance;
 
     public Dungeon()
     {
-        debug_connectors = new List<Vector3>();
-
         rooms = new List<Rect>();
         numRoomTries = 200;
         roomExtraSize = 0;
@@ -38,20 +39,27 @@ public class Dungeon : StageBuilder
 
     public void generate(Stage stage)
     {
+        // Validate sizes
         if (stage.width % 2 == 0 || stage.height % 2 == 0)
         {
             throw new ArgumentException(String.Format("The stage must be odd-sized. W: {0} H: {1}",
                 stage.width, stage.height));
         }
 
+        // Initialize stage
         bindStage(stage);
-
         fill(Tiles.wall);
-
         _regions = new int[stage.width, stage.height];
 
         _addRooms();
+        _addMazes();
+        _connectRegions();
+        _removeDeadEnds();
 
+    }
+
+    private void _addMazes()
+    {
         // Fill in all of the empty space with mazes.
         for (var y = 1; y < stage.bounds.height; y += 2)
         {
@@ -62,15 +70,10 @@ public class Dungeon : StageBuilder
                 _growMaze(pos);
             }
         }
-
-        _connectRegions();
-        _removeDeadEnds();
-
-//        _rooms.forEach(onDecorateRoom);
     }
 
-    /// Implementation of the "growing tree" algorithm from here:
-    /// http://www.astrolog.org/labyrnth/algrithm.htm.
+    // Implementation of the "growing tree" algorithm from here:
+    // http://www.astrolog.org/labyrnth/algrithm.htm
     private void _growMaze(Vector2 start)
     {
         var cells = new List<Vector2>();
@@ -176,11 +179,12 @@ public class Dungeon : StageBuilder
     private void _connectRegions()
     {
         // Find all of the tiles that can connect two (or more) regions.
+        // (TilePosition, [(int)regions])
         var connectorRegions = new Dictionary<Vector2, HashSet<int>>();
 
         foreach (var pos in Helpers.GetRoomTiles(Helpers.InflateRect(stage.bounds, -1)))
         {
-            // Can't already be part of a region.
+            // If its not a wall, then it cannot be a connector
             if (getTile(pos).type != Tiles.wall) continue;
 
             var regions = new HashSet<int>();
@@ -191,6 +195,7 @@ public class Dungeon : StageBuilder
                 if (region != 0) regions.Add(region);
             }
 
+            // If it cannot connect 2 or more regions its not a connector
             if (regions.Count < 2) continue;
 
             connectorRegions[pos] = regions;
@@ -206,16 +211,6 @@ public class Dungeon : StageBuilder
             openRegions.Add(i);
         }
 
-
-//        StringBuilder p = new StringBuilder();
-//        foreach (var openRegion in openRegions)
-//        {
-//            p.Append(openRegion);
-//            p.Append(", ");
-//        }
-//        MonoBehaviour.print("Open Regions: " + p);
-
-
         // Keep connecting regions until we're down to one.
         while (openRegions.Count > 2)
         {
@@ -229,36 +224,14 @@ public class Dungeon : StageBuilder
 
             // Merge the connected regions. We'll pick one region (arbitrarily) and
             // map all of the other regions to its index.
-
-//            p = new StringBuilder();
-//            foreach (var c_regions in connectorRegions[connector])
-//            {
-//                p.Append(c_regions);
-//                p.Append(", ");
-//            }
-//            MonoBehaviour.print("Connector Regions: " + p);
-
             // Try this with a Select(lambda)
             HashSet<int> regions = new HashSet<int>();
             foreach (int cRegion in connectorRegions[connector])
             {
                 regions.Add(merged[cRegion]);
             }
-//            Debug.Log("Regions Len: " + regions.Count);
             var dest = regions.First();
-//            Debug.Log("Regions Len After: " + regions.Count);
             var sources = regions.Skip(1).ToList();
-//            Debug.Log("Sources Len: " + sources.Count);
-
-//            Debug.Log("Dest: " + dest);
-
-//            p = new StringBuilder();
-//            foreach (var source in sources)
-//            {
-//                p.Append(source);
-//                p.Append(", ");
-//            }
-//            MonoBehaviour.print("Sources: " + p);
 
             // Merge all of the affected regions. We have to look at *all* of the
             // regions because other regions may have previously been merged with
@@ -300,35 +273,15 @@ public class Dungeon : StageBuilder
                 notNeededConnectors.Add(con);
             }
 
-//            p = new StringBuilder();
-//            foreach (var notNeededConnector in notNeededConnectors)
-//            {
-//                p.Append("(" + notNeededConnector.x + ", " + notNeededConnector.y + ") ");
-//            }
-//            MonoBehaviour.print("Not needed connectors: " + p);
-
             foreach (var notNeededConnector in notNeededConnectors)
             {
                 connectorRegions.Remove(notNeededConnector);
             }
-
-//            MonoBehaviour.print("Connectors count: " + connectorRegions.Count);
-//
-//            p = new StringBuilder();
-//            foreach (var openRegion in openRegions)
-//            {
-//                p.Append(openRegion);
-//                p.Append(", ");
-//            }
-//            MonoBehaviour.print("Open Regions: " + p);
         }
     }
 
     void _addJunction(Vector2 pos)
     {
-
-        // We add 0.5f to align the gizmos with the center of the tile.
-        debug_connectors.Add(new Vector3(pos.x + 0.5f, pos.y + 0.5f));
         if (Helpers.OneIn(4))
         {
             setTile(pos, Helpers.OneIn(3) ? Tiles.openDoor : Tiles.floor);
@@ -371,7 +324,7 @@ public class Dungeon : StageBuilder
     /// Gets whether or not an opening can be carved from the given starting
     /// [Cell] at [pos] to the adjacent Cell facing [direction]. Returns `true`
     /// if the starting Cell is in bounds and the destination Cell is filled
-    /// (or out of bounds).</returns>
+    /// (or out of bounds).
     private bool _canCarve(Vector2 pos, Vector2 direction)
     {
         // Must end in bounds.

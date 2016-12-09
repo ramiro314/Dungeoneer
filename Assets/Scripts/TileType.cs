@@ -1,20 +1,22 @@
-﻿using UnityEngine;
+﻿/*
+Algoritmo de Dungeon
+Define las propiedades de un TileType
+*/
+using UnityEngine;
 
 public class TileType
 {
     public string name;
     public bool isPassable;
-    public bool isTransparent;
     public Color appearance;
 
     public TileType opensTo;
     public TileType closesTo;
 
-    public TileType(string name, bool isPassable, bool isTransparent, Color appearance)
+    public TileType(string name, bool isPassable, Color appearance)
     {
         this.name = name;
         this.isPassable = isPassable;
-        this.isTransparent = isTransparent;
         this.appearance = appearance;
     }
 

@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿/*
+Efecto de la SpeedPotion
+*/
+using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
 
@@ -16,8 +19,10 @@ public class SpeedPotion : ItemEffect
 
     IEnumerator SpeedPotionCoroutine()
     {
+        // Increase speed
         caster.m_Character.m_AnimSpeedMultiplier = caster.m_Character.m_AnimSpeedMultiplier * speedIncrease;
         caster.m_Character.m_MoveSpeedMultiplier = caster.m_Character.m_MoveSpeedMultiplier * speedIncrease;
+        // Add tooltip that shows how much time of the effect is left
         GameObject buffList = GameObject.Find("BuffList");
         Object buffTimerPrefab = Resources.Load("Prefabs/BuffTimer");
         GameObject buffTimer = (GameObject) Instantiate(buffTimerPrefab, buffList.transform);
@@ -30,6 +35,7 @@ public class SpeedPotion : ItemEffect
             yield return new WaitForSeconds(1.0f);
         }
         Destroy(buffTimer);
+        // Reduce speed
         caster.m_Character.m_AnimSpeedMultiplier = caster.m_Character.m_AnimSpeedMultiplier / speedIncrease;
         caster.m_Character.m_MoveSpeedMultiplier = caster.m_Character.m_MoveSpeedMultiplier / speedIncrease;
     }

@@ -1,4 +1,10 @@
-﻿using System.Collections.Generic;
+﻿/*
+Algoritmo de Dungeon
+Funciones basicas usadas en varias instancias de la generacion del dungeon.
+Las funcinoes de Randomizacion se wrapearon para poder tener
+control centralizado sobre las seeds o los metodos de randomizacion.
+*/
+using System.Collections.Generic;
 using UnityEngine;
 
 public static class Helpers
