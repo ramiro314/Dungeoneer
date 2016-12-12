@@ -35,7 +35,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         private void Start()
         {
             // Set the color chosen by the player.
-            transform.FindChild("EthanBody").GetComponent<SkinnedMeshRenderer>().material.color = color;
+            // Box001 represents the object that has the MeshRenderer for the character.
+            transform.FindChild("Box001").GetComponent<SkinnedMeshRenderer>().material.color = color;
             coins = 0;
 
             // The player is not supposed to appear until the countdown ends, lets remove it out of sight.
