@@ -33,15 +33,15 @@ public class NetworkGameManager : NetworkBehaviour
 
     void Start()
     {
+        playerNumber = GameObject.FindGameObjectsWithTag("Player").Length;
+        gameEnded = false;
+
         // Generate dungeon only in the server, all the objects of the dungeon will spawn in the clients.
         if (isServer)
         {
             GameObject go = new GameObject("Dungeon");
             go.AddComponent<RenderDungeon>();
         }
-
-        playerNumber = GameObject.FindGameObjectsWithTag("Player").Length;
-        gameEnded = false;
 
         // Place the camera on top of the dungeon.
         int size = LobbyManager.s_Singleton._playerNumber * 10 + 1;
@@ -72,7 +72,9 @@ public class NetworkGameManager : NetworkBehaviour
         if(isServer){
             foreach (GameObject player in players)
             {
-                player.GetComponent<MyThirdPersonUserControl>().RpcSpawn(NetworkManager.singleton.GetStartPosition().position);
+                MyThirdPersonUserControl playerControl = player.GetComponent<MyThirdPersonUserControl>();
+                Debug.Log(string.Format("Spawning player {0}", playerControl.name));
+                playerControl.RpcSpawn(NetworkManager.singleton.GetStartPosition().position);
             }
         }
 

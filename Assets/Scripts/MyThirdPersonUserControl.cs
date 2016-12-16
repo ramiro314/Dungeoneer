@@ -89,10 +89,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     // Trigger item usage.
                     if (Input.GetKey(KeyCode.I) && item != null)
                     {
-                        item.effect.caster = this;
-                        item.effect.UseItem();
-                        item = null;
-                        _itemImage.enabled = false;
+                        CmdUseItem();
                     }
 
                     // read inputs
@@ -165,9 +162,21 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
             if (other.gameObject.CompareTag("Projectile") && other.GetComponent<StealProjectile>().caster != this)
             {
-                coins -= 1;
-                other.GetComponent<StealProjectile>().caster.coins += 1;
-                other.GetComponent<SphereCollider>().enabled = false;
+                if (coins > 0){
+                    coins -= 1;
+
+                    // Give coins to caster
+                    other.GetComponent<StealProjectile>().caster.coins += 1;
+
+                    // Disable colider so it only affects the player one time
+                    other.GetComponent<SphereCollider>().enabled = false;
+
+                    // Win condition
+                    if (other.GetComponent<StealProjectile>().caster.coins >= NetworkGameManager.sInstance.coinsToWin)
+                    {
+                        NetworkGameManager.sInstance.RpcEndGame();
+                    }
+                }
             }
         }
 
@@ -190,14 +199,33 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_Character.Move(move, crouch, jump);
         }
 
+        [Command]
+        void CmdUseItem()
+        {
+            Debug.Log("CmdUseItem called");
+            RpcUseItem();
+        }
+
+        [ClientRpc]
+        void RpcUseItem()
+        {
+            // For some reason this is called several times on the non local player
+            Debug.Log(string.Format("Current item {0}", item.name));
+            Debug.Log(string.Format("Current effect {0}", item.effect.name));
+            item.effect.caster = this;
+            item.effect.UseItem();
+            item = null;
+
+            if (isLocalPlayer)
+            {
+                _itemImage.enabled = false;
+            }
+        }
+
         [ClientRpc]
         public void RpcSpawn(Vector3 newPosition)
         {
-            if (isLocalPlayer)
-            {
-                // move back to spawn location
-                transform.position = newPosition;
-            }
+            transform.position = newPosition;
         }
 
         [ClientRpc]
